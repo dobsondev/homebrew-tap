@@ -165,8 +165,9 @@ cmd_create() {
   name="$(prompt "App name" "$default_name")"
   name="$(sanitise_name "$name")"
 
-  local app_id
-  app_id="$(echo "$name" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')"
+  local desktop_filename
+  desktop_filename="$(prompt "Desktop filename (without .desktop)" "$name")"
+  desktop_filename="${desktop_filename%.desktop}"
 
   local comment
   comment="$(prompt "Comment / description" "$name")"
@@ -175,7 +176,8 @@ cmd_create() {
   categories="$(prompt "Categories" "Game;Emulator;")"
 
   # ── Confirm & write ────────────────────────────────────────────────────────
-  local desktop_path="${DESKTOP_INSTALL_DIR}/${app_id}.desktop"
+  local desktop_path="${app_dir}/${desktop_filename}.desktop"
+  local symlink_path="${DESKTOP_INSTALL_DIR}/${desktop_filename}.desktop"
 
   echo ""
   info "Summary:"
@@ -186,11 +188,15 @@ cmd_create() {
   echo -e "  Comment:    ${comment}"
   echo -e "  Categories: ${categories}"
   echo -e "  Output:     ${desktop_path}"
+  echo -e "  Symlink:    ${symlink_path}"
   echo ""
 
   confirm "Write .desktop file?" "y" || { info "Aborted."; exit 0; }
 
   write_desktop_file "$desktop_path" "$name" "$appimage" "$app_dir" "$icon_path" "$comment" "$categories"
+  mkdir -p "$DESKTOP_INSTALL_DIR"
+  ln -sf "$desktop_path" "$symlink_path"
+  success "Symlinked: $symlink_path → $desktop_path"
 
   # Update desktop database
   if command -v update-desktop-database &>/dev/null; then
@@ -212,18 +218,18 @@ cmd_update() {
 
   # ── Find existing .desktop file ────────────────────────────────────────────
   local existing_desktop all_count
-  all_count="$(find "$DESKTOP_INSTALL_DIR" -maxdepth 1 -name "*.desktop" 2>/dev/null | wc -l | tr -d ' ')"
-  existing_desktop="$(find "$DESKTOP_INSTALL_DIR" -maxdepth 1 -name "*.desktop" 2>/dev/null | head -20 || true)"
+  all_count="$(find "$app_dir" -maxdepth 1 -name "*.desktop" 2>/dev/null | wc -l | tr -d ' ')"
+  existing_desktop="$(find "$app_dir" -maxdepth 1 -name "*.desktop" 2>/dev/null | head -20 || true)"
 
   if [[ -z "$existing_desktop" ]]; then
-    die "No .desktop files found in $DESKTOP_INSTALL_DIR"
+    die "No .desktop files found in $app_dir"
   fi
 
   if (( all_count > 20 )); then
-    warn "Found ${all_count} .desktop files — only showing the first 20."
+    warn "Found ${all_count} .desktop files in $app_dir — only showing the first 20."
   fi
 
-  info "Available .desktop files:"
+  info "Available .desktop files in $app_dir:"
   local i=1
   local -a desktop_files=()
   while IFS= read -r f; do
