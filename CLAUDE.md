@@ -14,12 +14,14 @@ A personal [Homebrew](https://brew.sh) tap (`dobsondev/tap`). Users install it w
 
 ## Release Workflow
 
-Every formula references a versioned tarball of this repo. When a tag matching `v*` is pushed, the CI workflow runs a matrix job per formula that:
+Every formula references a versioned release asset tarball. When a tag matching `v*` is pushed, the CI workflow:
 
-1. Fetches the tarball for that tag
-2. Computes its SHA256
-3. Updates the `url` and `sha256` fields in each formula via `sed`
+1. Uses `git archive` to produce a deterministic tarball and computes its SHA256 (`create-release` job)
+2. Creates a GitHub Release and uploads the tarball as a release asset
+3. Updates the `url` and `sha256` fields in each formula to point at the uploaded asset (`update-formula` job, runs after `create-release`)
 4. Commits the change back to `main`
+
+The formula URL format is `https://github.com/dobsondev/homebrew-tap/releases/download/vX.Y.Z/homebrew-tap-vX.Y.Z.tar.gz` — a release asset, not GitHub's auto-generated archive. Release assets are immutable once uploaded, so the SHA never drifts.
 
 **You never manually update `url`/`sha256` in a formula** — push a tag and CI handles it.
 
@@ -36,7 +38,7 @@ Every formula references a versioned tarball of this repo. When a tag matching `
 class MyScript < Formula
   desc "Short description"
   homepage "https://github.com/dobsondev/homebrew-tap"
-  url "https://github.com/dobsondev/homebrew-tap/archive/refs/tags/v0.0.0.tar.gz"
+  url "https://github.com/dobsondev/homebrew-tap/releases/download/v0.0.0/homebrew-tap-v0.0.0.tar.gz"
   sha256 "placeholder"
 
   def install
