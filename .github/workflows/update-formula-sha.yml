@@ -46,11 +46,6 @@ jobs:
 
   update-formula:
     needs: create-release
-    strategy:
-      matrix:
-        formula-file:
-          - Formula/desktop-file-helper.rb
-          - Formula/usb-controller-toggle.rb
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -58,21 +53,25 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: main
 
-      - name: Update formula
+      # Every formula in this tap shares the single release tag, so re-point
+      # them all in one commit. (A per-formula matrix here races on git push.)
+      - name: Update formulae
         env:
           TAG: ${{ needs.create-release.outputs.tag }}
           SHA: ${{ needs.create-release.outputs.sha256 }}
         run: |
           ASSET_URL="https://github.com/${{ github.repository }}/releases/download/${TAG}/homebrew-tap-${TAG}.tar.gz"
-          sed -i \
-            -e "s|url \".*\"|url \"${ASSET_URL}\"|" \
-            -e "s|sha256 \".*\"|sha256 \"${SHA}\"|" \
-            ${{ matrix.formula-file }}
+          for f in Formula/*.rb; do
+            sed -i \
+              -e "s|url \".*\"|url \"${ASSET_URL}\"|" \
+              -e "s|sha256 \".*\"|sha256 \"${SHA}\"|" \
+              "$f"
+          done
 
       - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add ${{ matrix.formula-file }}
-          git commit -m "chore: update ${{ matrix.formula-file }} to ${{ needs.create-release.outputs.tag }}"
+          git add Formula/
+          git diff --cached --quiet || git commit -m "chore: update formulae to ${{ needs.create-release.outputs.tag }}"
           git push origin HEAD:main

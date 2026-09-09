@@ -18,7 +18,7 @@ Every formula references a versioned release asset tarball. When a tag matching 
 
 1. Uses `git archive` to produce a deterministic tarball and computes its SHA256 (`create-release` job)
 2. Creates a GitHub Release and uploads the tarball as a release asset
-3. Updates the `url` and `sha256` fields in each formula to point at the uploaded asset (`update-formula` job, runs after `create-release`)
+3. Rewrites the `url` and `sha256` fields in every `Formula/*.rb` to point at the uploaded asset, in one commit (`update-formula` job, runs after `create-release`)
 4. Commits the change back to `main`
 
 The formula URL format is `https://github.com/dobsondev/homebrew-tap/releases/download/vX.Y.Z/homebrew-tap-vX.Y.Z.tar.gz` — a release asset, not GitHub's auto-generated archive. Release assets are immutable once uploaded, so the SHA never drifts.
@@ -29,8 +29,9 @@ The formula URL format is `https://github.com/dobsondev/homebrew-tap/releases/do
 
 1. Place the script in `scripts/` and make it executable (`chmod +x`)
 2. Create `Formula/my-script.rb` — use the existing formula as a template; set `url` and `sha256` to placeholders, they will be replaced on next tag push
-3. Add the formula path to the `matrix.formula-file` list in `.github/workflows/update-formula-sha.yml`
-4. Commit, tag (`git tag vX.Y.Z`), and push with tags (`git push origin main --tags`)
+3. Commit, tag (`git tag vX.Y.Z`), and push with tags (`git push origin main --tags`)
+
+The `update-formula` CI job rewrites `url`/`sha256` in every `Formula/*.rb`, so a new formula needs no workflow change. A formula whose script ships extra files (icons, `.desktop`, etc.) can keep them in a top-level dir and install them with `pkgshare.install` — see `Formula/usb-controller-toggle.rb`.
 
 ## Formula Template
 

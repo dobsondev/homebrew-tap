@@ -44,14 +44,14 @@ Scripts live in `scripts/` and are installed by their corresponding formula in `
 
 ### Releases and the Update Workflow
 
-All formulae in this tap share a single release tag (e.g. `v1.2.0`). When a tag matching `v*` is pushed, the `update-formula-sha.yml` workflow runs a matrix job — one job per formula — that:
+All formulae in this tap share a single release tag (e.g. `v1.2.0`). When a tag matching `v*` is pushed, the `update-formula-sha.yml` workflow:
 
-1. Fetches the tarball for that tag from GitHub
-2. Computes its SHA256
-3. Updates the `url` and `sha256` fields in the formula file using `sed`
-4. Commits and pushes the change back to `main`
+1. Builds a deterministic tarball for that tag and computes its SHA256
+2. Creates the GitHub Release and uploads the tarball as a release asset
+3. Rewrites the `url` and `sha256` fields in **every** `Formula/*.rb` to point at that asset
+4. Commits and pushes the change back to `main` in a single commit
 
-This means you never need to manually update a formula after tagging a release.
+This means you never need to manually update a formula after tagging a release, and adding a new formula requires no workflow change.
 
 > **Note:** If `main` is branch-protected, `GITHUB_TOKEN` will not have permission to push directly. In that case, replace the token in the `actions/checkout` step with a GitHub App token or a Personal Access Token that has write access.
 
@@ -94,30 +94,18 @@ The `url` and `sha256` values are placeholders — they will be replaced automat
 
 The `bin.install` line copies the script from `scripts/` into the Homebrew `bin` directory and renames it (stripping the `.sh` extension), so users run it as `my-new-script`.
 
-### 3. Register the formula in the update workflow
-
-Add the new formula path to the matrix in `.github/workflows/update-formula-sha.yml`:
-
-```yaml
-strategy:
-  matrix:
-    formula-file:
-      - Formula/desktop-file-helper.rb
-      - Formula/my-new-script.rb   # add this line
-```
-
-### 4. Commit, tag, and push
+### 3. Commit, tag, and push
 
 ```bash
-git add scripts/my-new-script.sh Formula/my-new-script.rb .github/workflows/update-formula-sha.yml
+git add scripts/my-new-script.sh Formula/my-new-script.rb
 git commit -m "feat: add my-new-script formula"
 git tag v1.x.0
 git push origin main --tags
 ```
 
-The workflow will trigger on the tag push and update the `url` and `sha256` in the formula automatically.
+The workflow triggers on the tag push, creates the release, and rewrites `url`/`sha256` in every formula automatically — no workflow edit needed for a new formula.
 
-### 5. Install
+### 4. Install
 
 ```bash
 brew update
