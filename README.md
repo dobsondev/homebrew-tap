@@ -21,6 +21,7 @@ brew install dobsondev/tap/<formula-name>
 | Formula | Description |
 |---|---|
 | `desktop-file-helper` | Manage custom `.desktop` files on Bazzite — create new entries or update existing ones to point at a new AppImage version |
+| `usb-controller-toggle` | Disable/enable the USB hub feeding wired controllers on the Bazzite HTPC, with a green/red Plasma tray indicator |
 
 ---
 

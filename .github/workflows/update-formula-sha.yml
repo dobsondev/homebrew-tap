@@ -50,6 +50,7 @@ jobs:
       matrix:
         formula-file:
           - Formula/desktop-file-helper.rb
+          - Formula/usb-controller-toggle.rb
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

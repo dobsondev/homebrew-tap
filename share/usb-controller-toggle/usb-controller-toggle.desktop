@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=USB Controller Toggle
+Comment=Tray indicator for the wired-controller USB hub
+Exec=usb-controller-tray
+Icon=input-gaming
+Terminal=false
+X-GNOME-Autostart-enabled=true
