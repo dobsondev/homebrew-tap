@@ -2,8 +2,8 @@
 class UsbControllerToggle < Formula
   desc "Toggle the wired-controller USB hub on Bazzite, with a tray indicator"
   homepage "https://github.com/dobsondev/homebrew-tap"
-  url "https://github.com/dobsondev/homebrew-tap/releases/download/v0.1.0/homebrew-tap-v0.1.0.tar.gz"
-  sha256 "0ce14462e64945e3dfdbc194f2250c7c252ad17563ed118040bae897b0e5da51"
+  url "https://github.com/dobsondev/homebrew-tap/releases/download/v0.1.1/homebrew-tap-v0.1.1.tar.gz"
+  sha256 "0ea60e4f722fef464d493aa121804329729e1709d8b58cf6b38fac5977ba9cc2"
 
   depends_on :linux
 
