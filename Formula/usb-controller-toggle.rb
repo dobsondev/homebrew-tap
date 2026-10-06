@@ -9,7 +9,7 @@ class UsbControllerToggle < Formula
 
   def install
     bin.install "scripts/usb-controller-toggle.sh" => "usb-controller-toggle"
-    bin.install "scripts/usb-controller-tray.sh" => "usb-controller-tray"
+    bin.install "scripts/usb-controller-tray.py" => "usb-controller-tray"
     pkgshare.install Dir["share/usb-controller-toggle/*"]
   end
 
@@ -26,8 +26,9 @@ class UsbControllerToggle < Formula
            usb-controller-tray install-autostart
            setsid usb-controller-tray >/dev/null 2>&1 &
 
-      The tray needs `yad`, which ships with Bazzite. If it is ever missing:
-           rpm-ostree install yad
+      The tray uses the system python's PySide6 (python3-pyside6), which ships
+      with Bazzite. If it is ever missing:
+           rpm-ostree install python3-pyside6
 
       Note: passive adapters (e.g. the GameCube adapter) re-appear on their own
       after `enable`. Wireless pads that sleep on USB disconnect (e.g. the
